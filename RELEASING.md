@@ -8,11 +8,11 @@
 | --- | --- | --- |
 | 插件本体 | 已完成 | 3 个工具、6 个模块、5 项自测通过 |
 | GitHub 仓库 | 已完成 | https://github.com/Uesccda/dsh-plugin-snapshot （public，默认分支 main） |
-| npm 发布 | **待办** | 本机未登录 npm，需要你执行一次 npm login |
+| npm 发布 | 已完成 | https://www.npmjs.com/package/dsh-plugin-snapshot （0.1.0） |
 | 收录 PR 分支 | 已完成 | fork 的 add-dsh-plugin-snapshot 分支已就绪，只差开 PR |
 | 收录 PR | **待办** | 规则要求仓库创建满 1 天，最早 2026-11-09 20:00 之后提交 |
 
-## 剩余动作一：发布到 npm
+## 剩余动作一：发布到 npm（已完成）
 
       cd C:\Users\17321\dsh-plugin-snapshot
       npm login

@@ -8,6 +8,8 @@ DSH 官方的 plugin_manager 已经能装、卸、启停插件；本插件只补
 
 插件升级失败时最难受的不是报错，而是"清单已经改了、依赖没装完、不知道回到了什么状态"。本插件在每次升级前把 profile 的三份清单（package.json / pnpm-lock.yaml / pnpm-workspace.yaml）存成一份带指纹与哈希的快照，任何时候都能退回去。
 
+> npm: https://www.npmjs.com/package/dsh-plugin-snapshot · 仓库: https://github.com/Uesccda/dsh-plugin-snapshot
+
 ## 安装
 
     dsh plugin add dsh-plugin-snapshot

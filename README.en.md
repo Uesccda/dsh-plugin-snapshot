@@ -4,6 +4,8 @@ Pre-upgrade snapshots, one-step rollback and a static health check for DeepSeek 
 
 The built-in plugin_manager already installs, removes and toggles plugins. This plugin adds what it does not: a verifiable recovery point before you change anything, a way back when an upgrade goes wrong, and a clear view of which plugins collide.
 
+> npm: https://www.npmjs.com/package/dsh-plugin-snapshot · repo: https://github.com/Uesccda/dsh-plugin-snapshot
+
 ## Install
 
     dsh plugin add dsh-plugin-snapshot

@@ -1,11 +1,12 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
+chcp 65001 >nul 2>&1
 echo ============================================
 echo   Publish dsh-plugin-snapshot to npm
 echo ============================================
 echo.
-echo Step 1/3: npm login (browser will open, click Authorize)
+echo Step 1/3: npm login  (browser opens, click Authorize)
 call npm login
 if errorlevel 1 goto fail
 echo.
@@ -18,8 +19,8 @@ call npm view dsh-plugin-snapshot version
 if errorlevel 1 goto fail
 echo.
 echo ============================================
-echo   DONE. Published successfully.
-echo   Next: run 提PR.bat after 2026-11-09 23:50
+echo   DONE - published successfully
+echo   Next: run open-pr.bat after 2026-11-09 23:50
 echo ============================================
 pause
 exit /b 0
@@ -27,8 +28,7 @@ exit /b 0
 :fail
 echo.
 echo ============================================
-echo   FAILED. Copy the error above and send it back.
+echo   FAILED - copy the error above and send it back
 echo ============================================
 pause
 exit /b 1
-
