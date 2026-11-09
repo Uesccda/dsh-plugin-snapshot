@@ -1,86 +1,118 @@
 # dsh-plugin-snapshot
 
-给 DeepSeek Harness 的插件做**升级前快照、一键回滚和静态体检**。
+**给 DeepSeek Harness 的插件做升级前快照、一键回滚和静态体检。**
 
-DSH 官方的 plugin_manager 已经能装、卸、启停插件；本插件只补它没有的那一块：**改动之前先存一份能验身份的恢复点，出问题能退回来，装完之后能看清谁跟谁冲突**。
+一个插件，三个工具。
 
-## 为什么需要它
+- npm: https://www.npmjs.com/package/dsh-plugin-snapshot
+- 仓库: https://github.com/Uesccda/dsh-plugin-snapshot
+- 兼容: DSH 0.2.0 及以上（已在 0.2.2-rc.1 实测）
 
-插件升级失败时最难受的不是报错，而是"清单已经改了、依赖没装完、不知道回到了什么状态"。本插件在每次升级前把 profile 的三份清单（package.json / pnpm-lock.yaml / pnpm-workspace.yaml）存成一份带指纹与哈希的快照，任何时候都能退回去。
+---
 
-> npm: https://www.npmjs.com/package/dsh-plugin-snapshot · 仓库: https://github.com/Uesccda/dsh-plugin-snapshot
+## 它解决什么问题
+
+| 你会遇到的麻烦 | 这个插件怎么处理 |
+| --- | --- |
+| 升级插件失败，清单已经改了、依赖没装完，不知道回到了什么状态 | 升级前先存一份带指纹和哈希的快照，任何时候都能退回去 |
+| 装了几十个插件，不知道谁跟谁冲突、谁的兼容声明已经过期 | 一次扫描给出：已装/已启用/缺失/不兼容/未验证，以及检查优先级 |
+| 不知道哪些插件有新版本，又怕自动升到测试版 | 列出可更新项，预发布版本单独标注、不混进"可升级"里 |
+
+它**不负责**安装、卸载、启停插件——那是 DSH 自带的 plugin_manager 的事。两套实现打架是插件市场里最常见的坑，这里直接避开。
+
+---
+
+## 三个工具
+
+| 工具 | 做什么 | 会不会写文件 |
+| --- | --- | --- |
+| plugin_snapshot | 创建快照 / 列出快照 / 恢复到某个快照 | 只写自己的数据目录，恢复时覆盖 profile 的三份清单 |
+| plugin_doctor | 静态体检：安装状态、作者声明的兼容性、patch id 冲突、缺失的包 | 纯只读 |
+| plugin_updates | 以 lockfile 解析出的版本为基准，查 registry 有没有新版本 | 纯只读 |
+
+---
+
+## 怎么用（对话示例）
+
+你不用记命令，直接跟模型说：
+
+- **"升级插件前先给我打个快照"** → 调用 plugin_snapshot 的 create，返回快照名
+- **"看看我这些插件有没有问题"** → 调用 plugin_doctor，给出 48 个插件的体检结果
+- **"哪些插件可以升级"** → 调用 plugin_updates，列出可更新项
+- **"刚才那次升级失败了，退回到升级前"** → 调用 plugin_snapshot 的 restore
+
+---
 
 ## 安装
 
     dsh plugin add dsh-plugin-snapshot
 
-装好后重启 DSH（或启用 HMR 时自动生效），三个工具随即可用。
+装完重启 DSH（启用 HMR 时自动生效），三个工具随即可用。
 
-## 提供的工具
+卸载：
 
-### plugin_snapshot
+    dsh plugin remove dsh-plugin-snapshot
 
-快照的创建、列表与恢复。
+---
 
-- action = "create"：把当前 profile 的三份清单存成一份快照，返回快照名
-- action = "list"：列出全部快照（时间、依赖数、是否带 manifest）
-- action = "restore" + name：恢复到指定快照；恢复前会先自动给现状再存一份
+## 兼容性
 
-每份快照都带 manifest：profile 指纹、创建时间、每个文件的存在性与 sha256。恢复时会先校验指纹——**别的 profile 的快照会被拒绝**；文件摘要对不上只告警（你可能手工改过清单）。
+本插件声明支持 DSH 0.2.0 及以上，并在 0.2.2-rc.1 实测通过：
 
-### plugin_updates
+    0.2.2-rc.1  compatible
+    0.2.1       compatible
+    0.2.0+      compatible
 
-只读的版本检测。
+如果你在别的 DSH 版本上使用，plugin_doctor 会如实显示为「未验证」而不是假装兼容。
 
-- 以 pnpm-lock.yaml 里解析出来的版本为基准，去 registry 查候选版本
-- 输出每个插件的状态：updatable / major / uptodate / prerelease / failed / manual
-- 预发布版本不会被建议升级；主版本变更、GitHub 源一律标成需人工确认
+---
 
-### plugin_doctor
+## 快照里存了什么
 
-静态体检。
+profile 目录下的三份清单：
 
-- 已声明 vs 已安装 vs 已启用，三者分开列
-- 按插件作者声明判定 DSH 版本兼容性：**明确写 incompatible 的判成不兼容，绝不显示成"大概率可用"**
-- 重复的 cordis.patch.yml 行 id、缺失的包、无法解析的清单
-- 给出"检查优先级"（规则加权，不是崩溃概率）
+    package.json
+    pnpm-lock.yaml
+    pnpm-workspace.yaml
+
+每份快照额外带一个 manifest.json，记录：profile 指纹、创建时间、每个文件是否存在、每个文件的 sha256。
+
+恢复时会先比对 profile 指纹——**别的 profile 的快照会被拒绝**，避免把 A 环境的清单写进 B。文件摘要对不上只告警，因为你可能手工改过清单。
+
+⚠️ 快照**不包含 node_modules**。恢复之后需要让包管理器重新安装依赖。
+
+---
 
 ## 数据放在哪
 
     ~/.dsh-plugin-snapshot/snapshots/<时间戳>/
     ~/.dsh-plugin-snapshot/logs/
 
-只写这两个目录，以及恢复时写回 profile 的三份清单。不碰 node_modules，不改 bundles 清单，不启动或关闭 DSH。
+只写这两个目录，以及恢复时写回 profile 的三份清单。不碰 node_modules、不改 bundles 清单、不启动或关闭 DSH。
+
+---
 
 ## 安全边界
 
-- plugin_updates 与 plugin_doctor 是**纯只读**：只读文件、只发 GET 请求
-- plugin_snapshot 的 create 只写自己的数据目录；restore 需要显式传 name，且只覆盖三份清单
-- 不实现安装/卸载/启停——那是官方 plugin_manager 的职责，避免两套实现互相打架
+- plugin_doctor 与 plugin_updates 是**纯只读**：只读文件、只发 GET 请求
+- plugin_snapshot 的 create 只写自己的数据目录；restore 必须显式传 name
+- 不调用 pnpm、不修改依赖树、不结束任何进程
 
-## 配置
-
-可选，写进 profile 的插件配置：
-
-| 字段 | 默认 | 说明 |
-| --- | --- | --- |
-| profileDir | 自动定位 | 显式指定 profile 目录 |
-| registry | registry.npmjs.org | 检测用的源，也可用 DSH_REGISTRY |
-| dataDir | ~/.dsh-plugin-snapshot | 快照与日志目录 |
-| snapshotsKeep | 7 | 保留份数 |
-| concurrency | 8 | 检测并发 |
-
-profile 定位顺序：配置 > 环境变量 DSH_PROFILE_DIR > ~/.dsh/profiles/desktop > 扫描 profiles 目录取最近修改的。
+---
 
 ## 已知限制
 
-- 快照只覆盖三份清单，不含 node_modules。恢复之后仍需让包管理器重新安装依赖
+- 快照只覆盖三份清单，不含 node_modules
 - 诊断基于静态扫描与作者声明，不代表运行时验证
-- 不做定时任务：插件只在 DSH 运行时存在
+- 没有定时任务：插件只在 DSH 运行时存在
+
+---
 
 ## 开发
 
-    npm test        # 5 项自测，用 stub 顶替 @deepseek-ai/dsh-tools
+    npm test      # 5 项自测，用 stub 顶替 @deepseek-ai/dsh-tools
+
+---
 
 ## 许可
 
