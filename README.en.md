@@ -1,8 +1,8 @@
 # dsh-plugin-snapshot
 
-**Pre-upgrade snapshots, one-step rollback and a static health check for DeepSeek Harness plugins.**
+**Pre-upgrade snapshots, one-step rollback, a static health check, and lock-probed auto-update for DeepSeek Harness plugins.**
 
-One plugin, three tools.
+One plugin = three tools + a Settings panel + an optional startup auto-update.
 
 - npm: https://www.npmjs.com/package/dsh-plugin-snapshot
 - repo: https://github.com/Uesccda/dsh-plugin-snapshot
@@ -32,6 +32,17 @@ It deliberately does **not** install, remove or toggle plugins: that is what the
 
 ---
 
+## Settings panel
+
+After install, **Settings → Plugin Updates** shows a three-tab panel:
+
+| Tab | Contents | Writes |
+| --- | --- | --- |
+| **Updates** | plugins with changes (updatable / major / prerelease / below-local / incompatible), per-row update, update-all | yes |
+| **Snapshots** | list, create, restore | yes |
+| **Diagnostics** | installed / enabled / missing / incompatible / untested / native counts, conflict table, review priority | no |
+
+All write operations go over same-origin HTTP with three guards: custom header, `application/json`, Origin check; plus a 1.5 s throttle per endpoint.
 ## Usage
 
 Just talk to the model:
@@ -72,6 +83,29 @@ Nothing else is written except the three profile manifests on restore.
 
 ---
 
+## Auto-update
+
+**Disabled by default.** Set `"autoUpdate": true` explicitly to enable it — installing a snapshot tool should not silently rewrite your dependency tree.
+
+When enabled, it runs 45 seconds after DSH starts:
+
+```
+checkUpdates  ->  filter (exclude list + scope)
+  ->  lock probe: drop packages currently held by DSH
+  ->  snapshot
+  ->  per-package install (pnpm add --save-exact --ignore-scripts)
+  ->  four-state verdict: read the on-disk version, trust no exit code
+  ->  layered rollback on failure (package-level / full)
+```
+
+| Mechanism | What it does |
+| --- | --- |
+| **Lock probe** | directory rename + `.node` open probe, removes packages that cannot be replaced |
+| **Four-state verdict** | on-disk version present means success; only NO_MATCHING_VERSION / UNSUPPORTED_ENGINE / FETCH_404 count as failure |
+| **Layered rollback** | partial success reverts only failed items; full failure restores then reinstalls |
+| **Transient retry** | network failures retried at 8s / 30s / 90s; deterministic failures are not retried |
+
+Results are written to `~/.dsh-plugin-snapshot/auto-update.json` and shown at the top of the Updates tab.
 ## Configuration
 
     {
