@@ -18,7 +18,7 @@
 | 装了几十个插件，不知道谁跟谁冲突、谁的兼容声明已经过期 | 一次扫描给出：已装/已启用/缺失/不兼容/未验证，以及检查优先级 |
 | 不知道哪些插件有新版本，又怕自动升到测试版 | 列出可更新项，预发布版本单独标注、不混进"可升级"里 |
 
-它**不负责**安装、卸载、启停插件——那是 DSH 自带的 plugin_manager 的事。两套实现打架是插件市场里最常见的坑，这里直接避开。
+它**默认不做**安装、卸载、启停——那是 DSH 自带的 plugin_manager 的事。两套实现打架是插件市场里最常见的坑，这里直接避开。
 
 ---
 
@@ -96,15 +96,40 @@ profile 目录下的三份清单：
 
 - plugin_doctor 与 plugin_updates 是**纯只读**：只读文件、只发 GET 请求
 - plugin_snapshot 的 create 只写自己的数据目录；restore 必须显式传 name
-- 不调用 pnpm、不修改依赖树、不结束任何进程
+- 两个只读工具（plugin_updates、plugin_doctor）只读文件、只发 GET 请求
+- 写操作（快照恢复、更新）会执行 pnpm，但只作用于 profile 中**已安装**的包，
+  只允许升到更高版本，拒绝降级与 dist-tag，并一律带 --ignore-scripts
+- 不结束任何进程
 
 ---
+
+## 配置项
+
+在插件配置里可写：
+
+    {
+      "profileDir": "指定 profile 目录（留空则自动定位）",
+      "snapshotsKeep": 7,
+      "concurrency": 8,
+      "autoUpdate": false,
+      "autoUpdateScope": "patch",
+      "autoExclude": ["某个不想被自动更新的包"]
+    }
+
+| 配置 | 默认 | 说明 |
+| --- | --- | --- |
+| autoUpdate | false | 是否在 DSH 启动 45 秒后自动检查并更新 |
+| autoUpdateScope | patch | 升级档位：patch 仅补丁版 / minor 含次版本 / major 含主版本 |
+| autoExclude | [] | 永不参与自动更新的包名列表 |
+| snapshotsKeep | 7 | 保留的快照份数 |
+| concurrency | 8 | 查询 registry 的并发数 |
 
 ## 已知限制
 
 - 快照只覆盖三份清单，不含 node_modules
 - 诊断基于静态扫描与作者声明，不代表运行时验证
-- 没有定时任务：插件只在 DSH 运行时存在
+- 自动更新**默认关闭**：需在插件配置里显式写 autoUpdate: true 才会启用
+- 插件只在 DSH 运行时存在，DSH 关闭期间不做任何事
 
 ---
 

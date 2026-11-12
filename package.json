@@ -1,8 +1,8 @@
 {
   "name": "dsh-plugin-snapshot",
-  "version": "0.1.1",
+  "version": "0.3.5",
   "type": "module",
-  "description": "Pre-update snapshots, one-step rollback and conflict diagnostics for DeepSeek Harness profile plugins.",
+  "description": "Snapshots, one-step rollback, static diagnostics, auto-update with lock probe and four-state verification for DeepSeek Harness plugins.",
   "keywords": [
     "deepseek-harness",
     "dsh",
@@ -23,8 +23,15 @@
     "url": "https://github.com/Uesccda/dsh-plugin-snapshot/issues"
   },
   "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
   "files": [
     "lib",
+    "client",
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
@@ -33,6 +40,12 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
     },
     "compatibility": {
       "dshReleases": {
@@ -54,7 +67,6 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test test/plugin.test.mjs",
-    "smoke": "node test/smoke.mjs"
+    "test": "node --test test/plugin.test.mjs"
   }
 }

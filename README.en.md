@@ -72,6 +72,25 @@ Nothing else is written except the three profile manifests on restore.
 
 ---
 
+## Configuration
+
+    {
+      "profileDir": "explicit profile directory (auto-detected when empty)",
+      "snapshotsKeep": 7,
+      "concurrency": 8,
+      "autoUpdate": false,
+      "autoUpdateScope": "patch",
+      "autoExclude": ["package-you-never-want-touched"]
+    }
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| autoUpdate | false | Disabled by default. Set true to check and update 45 s after DSH starts |
+| autoUpdateScope | patch | patch only / minor / major |
+| autoExclude | [] | packages never touched by auto-update |
+| snapshotsKeep | 7 | how many snapshots to retain |
+| concurrency | 8 | registry query parallelism |
+
 ## Limitations
 
 - Snapshots cover the three manifests only, not node_modules
