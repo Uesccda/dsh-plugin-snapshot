@@ -1,8 +1,8 @@
 # dsh-plugin-snapshot
 
-**Pre-upgrade snapshots, one-step rollback, a static health check, and lock-probed auto-update for DeepSeek Harness plugins.**
+**Checks and upgrades your installed DSH plugins automatically — a snapshot before every upgrade, automatic rollback on failure, plus one-click rollback and a static health check.**
 
-One plugin = three tools + a Settings panel + an optional startup auto-update.
+One plugin = automatic upgrades + three tools + a Settings panel.
 
 - npm: https://www.npmjs.com/package/dsh-plugin-snapshot
 - repo: https://github.com/Uesccda/dsh-plugin-snapshot

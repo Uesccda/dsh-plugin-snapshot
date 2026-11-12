@@ -1,8 +1,8 @@
 # dsh-plugin-snapshot
 
-**给 DeepSeek Harness 的插件做升级前快照、一键回滚、静态体检，以及带占用探针的自动更新。**
+**自动检查并升级你安装的 DSH 插件——升级前自动打快照，失败自动回滚；也能一键回滚与静态体检。**
 
-一个插件 = 三个工具 + 一个设置页面板 + 一个可选的启动自动更新。
+一个插件 = 自动升级 + 三个工具 + 一个设置页面板。
 
 - npm: https://www.npmjs.com/package/dsh-plugin-snapshot
 - 仓库: https://github.com/Uesccda/dsh-plugin-snapshot
