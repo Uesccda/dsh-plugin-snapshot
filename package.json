@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-snapshot",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "type": "module",
   "description": "Automatically checks and upgrades your installed DSH plugins: snapshot before every upgrade, automatic rollback on failure, plus one-click rollback and static diagnostics.",
   "keywords": [
