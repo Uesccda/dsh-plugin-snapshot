@@ -22,6 +22,9 @@
 
 ---
 
+![设置页面板示意](https://cdn.jsdelivr.net/gh/Uesccda/dsh-plugin-snapshot@main/docs/panel-preview.svg)
+
+> 上图是面板结构示意（设置 → 插件更新），非真实截图。
 ## 三个工具
 
 | 工具 | 做什么 | 会不会写文件 |

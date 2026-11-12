@@ -22,6 +22,9 @@ It deliberately does **not** install, remove or toggle plugins: that is what the
 
 ---
 
+![Settings panel preview](https://cdn.jsdelivr.net/gh/Uesccda/dsh-plugin-snapshot@main/docs/panel-preview.svg)
+
+> Structural preview of the panel (Settings → Plugin Updates). Not a screenshot.
 ## The three tools
 
 | Tool | Does | Writes |
